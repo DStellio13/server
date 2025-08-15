@@ -1,0 +1,168 @@
+│   .htaccess
+│   Arborescence.txt
+│   favicon.ico
+│   index.php
+│   indexV1.php
+│   projects_admin.php
+│   readme_htdocs.md
+│   styleguide_global.md
+│
+├───arduino
+│   └───module sensor kit
+│       ├───Project 11 OLED Display
+│       │   ├───Example
+│       │   │   └───ssd1306_128x64_i2c
+│       │   │           ssd1306_128x64_i2c.ino
+│       │   │
+│       │   └───OLED_Display
+│       │           OLED_Display.ino
+│       │
+│       ├───Project 12 Soil humidity sensor
+│       │   └───Soil-humidity-sensor
+│       │           Soil-humidity-sensor.ino
+│       │
+│       ├───Project 13 Obstacle Avoidance
+│       │   └───Obstacle_Avoidance_Module
+│       │           Obstacle_Avoidance_Module.ino
+│       │
+│       ├───Project 14 Touch Sensor
+│       │   └───Obstacle_Avoidance_Module
+│       │           Obstacle_Avoidance_Module.ino
+│       │
+│       ├───Project 15 5V Relay Module
+│       │   └───5V-Relay-Module
+│       │           5V-Relay-Module.ino
+│       │
+│       ├───Project 16 8x8 Red Dot Motrix Screen
+│       │   └───Motrix-Screen
+│       │           Motrix-Screen.ino
+│       │
+│       ├───Project 4 Analog_Joystick
+│       │   └───Analog_Joystick
+│       │           Analog_Joystick.ino
+│       │
+│       ├───Project 5 Servo
+│       │   │   Servo.zip
+│       │   │
+│       │   └───servo
+│       │           servo.ino
+│       │
+│       ├───Project 6 DHT11
+│       │   │   SimpleDHT.zip
+│       │   │
+│       │   └───DHT11
+│       │           DHT11.ino
+│       │
+│       ├───Project 7 Ultrasound Module
+│       │   │   HC-SR04.zip
+│       │   │
+│       │   └───SR04_Example
+│       │           SR04_Example.ino
+│       │
+│       ├───Project 8 Four Digital Tube
+│       │   └───Ultrasonic_Ranging
+│       │           Ultrasonic_Ranging.ino
+│       │
+│       └───Project 9 LCD1602 I2C Module
+│           └───LCD_1602_I2C_Module
+│                   LCD_1602_I2C_Module.ino
+│
+├───assets
+│   │   logo.svg
+│   │   README.md
+│   │
+│   ├───icons
+│   │       project-cs.svg
+│   │       project-dashboard.svg
+│   │       project-emploi.svg
+│   │       project-guitare.svg
+│   │       project-monitor.svg
+│   │       project-serveur.svg
+│   │       project-streaming.svg
+│   │       project-tasks.svg
+│   │
+│   ├───img
+│   │       placeholder.png
+│   │
+│   └───media
+│       └───sound
+│               bip_hiphop.mp3
+│
+├───cs_inventory
+│   │   index.php
+│   │
+│   ├───api
+│   │       get_inventory.php
+│   │
+│   ├───assets
+│   ├───data
+│   │       inventory.json
+│   │
+│   └───includes
+│           config.php
+│
+├───docs
+│   │   index.html
+│   │
+│   ├───arduino
+│   │       LAFVIN Arduino Module Sensor Kit.pdf
+│   │
+│   └───cv
+│           CV.pdf
+│
+├───emploi
+│   │   ajouter.php
+│   │   index.php
+│   │   modifier.php
+│   │   supprimer.php
+│   │   update_statut.php
+│   │
+│   └───includes
+│       │   config.php
+│       │
+│       └───assets
+├───img
+│       index.html
+│
+├───includes
+│   ├───core
+│   │       config.php
+│   │
+│   ├───projects
+│   │       init_project.php
+│   │       scan.php
+│   │
+│   └───ui
+│       └───quickbar
+│               handle.php
+│               loader.js
+│               quickbar.css
+│               quickbar.js
+│               quickbar.php
+│               quickbar_embed.php
+│
+├───inventaire
+│       index.html
+│
+├───monitor
+│   ├───V1
+│   │       index.php
+│   │       README.md
+│   │
+│   └───V2
+│           index.html
+│
+├───script
+│       cs_inventory.js
+│       emploi.js
+│       monitor.js
+│       script.js
+│
+├───streaming
+│       index.html
+│
+└───style
+        cs_inventory.css
+        emploi.css
+        monitor.css
+        style.css

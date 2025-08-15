@@ -1,0 +1,4 @@
+<FilesMatch "\.(ini|env|json|log|py|sh|bat|cmd)$">
+  Require all denied
+</FilesMatch>
+Options -Indexes

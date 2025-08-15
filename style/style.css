@@ -1,0 +1,260 @@
+/* Reset et base */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background: #f9f9f9;
+  color: #222;
+  line-height: 1.5;
+  padding: 20px;
+  max-width: 960px;
+  margin: auto;
+}
+
+/* Titres */
+h1 {
+  margin-bottom: 1em;
+  font-size: 2rem;
+}
+
+h2 {
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  font-size: 1.3rem;
+}
+
+/* Arborescence */
+.arborescence {
+  font-family: monospace;
+  background: #eee;
+  padding: 12px 16px;
+  border-radius: 4px;
+  margin-bottom: 2em;
+  white-space: pre-wrap;
+  color: #444;
+}
+
+/* Projets */
+#projects {
+  margin-bottom: 3em;
+}
+
+.project {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin-bottom: 1em;
+  padding: 10px 15px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s ease;
+  outline-offset: 3px;
+}
+
+.project:hover,
+.project:focus {
+  background-color: #f0f8ff;
+  outline: 2px solid #0078d7;
+}
+
+.project-title {
+  margin-bottom: 0.2em;
+  font-weight: bold;
+}
+
+.project-details {
+  padding-top: 10px;
+  border-top: 1px solid #ccc;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.project-details a {
+  color: #0078d7;
+  text-decoration: none;
+}
+
+.project-details a:hover,
+.project-details a:focus {
+  text-decoration: underline;
+}
+
+/* Checklist intégrée dans chaque projet */
+.checklist {
+  list-style: none;
+  margin-top: 10px;
+  padding-left: 0;
+}
+
+.checklist li {
+  margin-bottom: 6px;
+  padding-left: 18px;
+  position: relative;
+  font-weight: 500;
+}
+
+.checklist li.done::before {
+  content: "✔";
+  color: green;
+  position: absolute;
+  left: 0;
+}
+
+.checklist li.in-progress::before {
+  content: "➤";
+  color: orange;
+  position: absolute;
+  left: 0;
+}
+
+.checklist li.todo::before {
+  content: "•";
+  color: #999;
+  position: absolute;
+  left: 0;
+}
+
+/* Checklist générale */
+#checklist {
+  margin-top: 1em;
+}
+
+#checklist h1 {
+  font-size: 1.8rem;
+  margin-bottom: 1em;
+}
+
+#checklist section + section {
+  margin-top: 1.8em;
+}
+
+#checklist ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+#checklist li {
+  margin-bottom: 8px;
+}
+
+#checklist label {
+  cursor: pointer;
+  user-select: none;
+  font-weight: 500;
+}
+
+#checklist input[type="checkbox"] {
+  margin-right: 8px;
+  cursor: pointer;
+}
+
+/* ====== UI Compacte & Ludique (ajouts) ====== */
+
+:root{
+  --bg: #f5f7fb;
+  --card-bg:#fff;
+  --text:#222;
+  --muted:#6b7280;
+  --brand:#0ea5e9;
+  --ok:#16a34a;
+  --warn:#f59e0b;
+  --todo:#9ca3af;
+  --ring:#cfe9ff;
+}
+
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0f1217;
+    --card-bg:#141922;
+    --text:#e5e7eb;
+    --muted:#9aa3b2;
+    --brand:#38bdf8;
+    --ok:#22c55e;
+    --warn:#fbbf24;
+    --todo:#6b7280;
+    --ring:#203343;
+  }
+}
+
+/* page */
+body{
+  background: radial-gradient(1200px 600px at 10% -10%, #eaf6ff 0%, transparent 40%),
+              radial-gradient(1000px 500px at 110% -20%, #f5ffe9 0%, transparent 35%),
+              var(--bg);
+  color:var(--text);
+}
+
+/* header */
+.site-header{
+  display:flex; align-items:center; justify-content:space-between;
+  margin: 4px 0 16px;
+}
+.site-header .header-right{ display:flex; align-items:center; gap:.5rem; }
+.tag{
+  background: var(--ring); color: var(--brand);
+  padding:.2rem .5rem; border-radius:999px; font-size:.8rem; font-weight:600;
+  letter-spacing:.02em;
+}
+.btn-ghost{
+  background: transparent; border:1px solid var(--ring);
+  color:var(--brand); padding:.25rem .55rem; border-radius:8px; cursor:pointer;
+}
+.btn-ghost:hover{ background: var(--ring); }
+
+/* grille de projets */
+.projects-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+/* carte projet compacte */
+.project{
+  background:var(--card-bg);
+  border:1px solid rgba(0,0,0,.06);
+  border-radius:12px;
+  padding:10px 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.04);
+  transition: transform .15s ease, box-shadow .15s ease, background .2s ease;
+}
+.project:hover, .project:focus{
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0,0,0,.08);
+  outline: 2px solid var(--ring);
+  background: linear-gradient(180deg, rgba(255,255,255,.08), transparent);
+}
+
+.project-title{
+  display:flex; align-items:center; gap:.5rem;
+  margin: 0; font-weight: 700; font-size: 1.05rem;
+}
+.project-title .icon{ vertical-align:middle; margin-right:.1rem; filter: drop-shadow(0 1px 0 rgba(0,0,0,.1)); }
+
+.project-details{
+  margin-top:8px; padding-top:8px; border-top:1px dashed rgba(0,0,0,.1);
+  font-size:.95rem; color: var(--text);
+}
+
+/* chips d’état */
+.chip{
+  margin-left:auto; font-size:.8rem; line-height:1;
+  border-radius:999px; padding:.15rem .45rem; font-weight:700;
+  border:1px solid transparent;
+}
+.chip-wip{ color:var(--warn); border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.08); }
+.chip-ok{  color:var(--ok);   border-color: rgba(34,197,94,.35);  background: rgba(34,197,94,.08); }
+.chip-todo{color:var(--todo); border-color: rgba(156,163,175,.35);background: rgba(156,163,175,.10); }
+
+/* checklist + densité */
+.checklist li{ margin-bottom:4px; font-weight:500; }
+.project.compact .project-details{ margin-top:6px; padding-top:6px; }
+.project.compact{ padding:8px 10px; }
+
+/* mode compact global (bouton ↕) */
+body.compact .project{ padding:8px 10px; }
+body.compact .project-details{ margin-top:6px; padding-top:6px; }
+body.compact h2.project-title{ font-size:1rem; }

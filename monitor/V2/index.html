@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>📡 Projet Monitor - V2</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="../../style/style.css">
+</head>
+<body>
+<header style="display:flex;align-items:center;gap:.6rem;margin-bottom:1rem;">
+  <img src="assets/logo.svg" alt="Mes Projets Locaux" width="160" height="36">
+</header>
+  <div class="project" aria-expanded="true">
+    <h1 class="project-title">📡 Projet Monitor - V2</h1>
+    <div class="project-details">
+      <p>
+        Écoute des ports utilisés par NDI pour détecter des décalages de son ou de vidéo.<br>
+        Analyse réalisée en Python (stocké hors serveur web).<br>
+        Cette page affiche l’état d’avancement et les dernières mesures.
+      </p>
+
+      <p>
+        <a href="../V1/index.php" target="_blank">📜 Accéder à la V1 (ancienne interface)</a>
+      </p>
+
+      <h2>Checklist</h2>
+      <ul class="checklist">
+        <li class="todo">Scanner les ports NDI en Python</li>
+        <li class="todo">Analyser les paquets pour extraire latence et drift</li>
+        <li class="todo">Stocker les mesures en JSON</li>
+        <li class="todo">Afficher les données ici en direct</li>
+      </ul>
+
+      <h2>Dernières mesures</h2>
+      <pre id="data-output" style="background:#f4f4f4; padding:10px; border-radius:5px;">En attente de données...</pre>
+    </div>
+  </div>
+
+  <script>
+    fetch("../data/live.json")
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("data-output").textContent = JSON.stringify(data, null, 2);
+      })
+      .catch(() => {
+        document.getElementById("data-output").textContent = "Aucune donnée disponible.";
+      });
+  </script>
+
+</body>
+</html>

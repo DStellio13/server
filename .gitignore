@@ -1,0 +1,21 @@
+﻿# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs / caches
+*.log
+cache/
+tmp/
+
+# Secrets réels (ne PAS versionner)
+includes/core/config.php
+includes/core/projects/*.php
+
+# Autoriser les exemples
+!includes/core/config.example.php
+!includes/core/projects/*.example.php
+
+# Archives lourdes (si besoin)
+*.zip

@@ -1,0 +1,273 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f4f4f4;
+  overflow-x: hidden;
+}
+
+.emploi-header {
+  background-color: #333;
+  color: white;
+  padding: 20px;
+  text-align: center;
+}
+
+h1, h2 {
+  margin: 0 0 20px;
+  text-align: center;
+}
+
+section {
+  max-width: 95%;
+  margin: 40px auto;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+
+.checklist ul {
+  list-style: none;
+  padding: 0;
+}
+
+.checklist li {
+  margin: 8px 0;
+  font-size: 1rem;
+}
+
+.todo {
+  color: red;
+  margin-right: 8px;
+}
+
+.done {
+  color: green;
+  margin-right: 8px;
+}
+
+.in-progress {
+  color: orange;
+  margin-right: 8px;
+}
+
+.documents ul {
+  padding-left: 20px;
+}
+
+.documents a {
+  text-decoration: none;
+  color: #0077cc;
+}
+
+.documents a:hover {
+  text-decoration: underline;
+}
+
+/* === TABLEAU DE CANDIDATURES === */
+.candidature-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+  margin-top: 20px;
+}
+
+.candidature-table th,
+.candidature-table td {
+  border: 1px solid #ccc;
+  padding: 10px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.candidature-table th {
+  background-color: #f0f0f0;
+  font-weight: bold;
+}
+
+/* Largeurs minimales personnalisées */
+.candidature-table th:nth-child(1),  /* Entreprise */
+.candidature-table td:nth-child(1) {
+  min-width: 120px;
+}
+
+.candidature-table th:nth-child(2),  /* Poste */
+.candidature-table td:nth-child(2) {
+  min-width: 130px;
+}
+
+.candidature-table th:nth-child(3),  /* Département */
+.candidature-table td:nth-child(3) {
+  min-width: 80px;
+}
+
+.candidature-table th:nth-child(4),  /* Salaire */
+.candidature-table td:nth-child(4) {
+  min-width: 90px;
+}
+
+.candidature-table th:nth-child(5),  /* Date */
+.candidature-table td:nth-child(5) {
+  min-width: 100px;
+}
+
+.candidature-table th:nth-child(6),  /* Statut */
+.candidature-table td:nth-child(6) {
+  min-width: 130px;
+}
+
+.candidature-table th:nth-child(7),  /* Lien */
+.candidature-table td:nth-child(7) {
+  min-width: 60px;
+}
+
+.candidature-table th:nth-child(8),  /* Commentaire */
+.candidature-table td:nth-child(8) {
+  min-width: 200px;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.candidature-table td:nth-child(8):hover {
+  white-space: normal;
+  position: relative;
+  z-index: 2;
+  background: #f9f9f9;
+}
+
+/* Colonne contact */
+.candidature-table th:nth-child(9),
+.candidature-table td:nth-child(9) {
+  min-width: 160px;
+}
+
+/* Colonne actions */
+.candidature-table th:nth-child(10),
+.candidature-table td:nth-child(10) {
+  min-width: 140px;
+}
+
+/* === SELECT AJAX === */
+.statut-select {
+  padding: 4px;
+  font-size: 0.95em;
+  border-radius: 5px;
+  background: #fff;
+  border: 1px solid #ccc;
+}
+
+/* === FORMULAIRE === */
+form {
+  max-width: 1000px;
+  margin: auto;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group.full {
+  grid-column: span 2;
+}
+
+label {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="url"],
+input[type="date"],
+textarea,
+select {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1em;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form-buttons {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.btn {
+  padding: 8px 16px;
+  border: none;
+  background-color: #0077cc;
+  color: white;
+  cursor: pointer;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 0.95em;
+}
+
+.btn:hover {
+  background-color: #005fa3;
+}
+
+.btn-delete {
+  background-color: #cc0000;
+}
+
+.btn-delete:hover {
+  background-color: #a30000;
+}
+
+.btn-edit {
+  background-color: #ffa500;
+}
+
+.btn-edit:hover {
+  background-color: #cc8500;
+}
+
+.btn-add {
+  background-color: #28a745;
+}
+
+.btn-add:hover {
+  background-color: #218838;
+}
+.project-status {
+  max-width: 95%;
+  margin: 40px auto;
+  padding: 20px;
+  background: #fff9f0;
+  border: 1px solid #e0cfa9;
+  border-radius: 8px;
+  box-shadow: 0 0 4px rgba(0,0,0,0.05);
+}
+
+.project-status h3 {
+  margin-top: 30px;
+  color: #444;
+}
+
+.project-status ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.project-status li {
+  padding: 5px 0;
+  font-size: 1rem;
+}

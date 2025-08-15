@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>🎥 Projet Streaming - Organisation & Planning</title>
+  <link rel="stylesheet" href="../style/style.css" />
+  <script src="../script/script.js" defer></script>
+</head>
+<body>
+
+  <h1>🎥 Projet Streaming</h1>
+
+  <section class="project" tabindex="0" aria-expanded="false" data-target="streaming">
+    <h2 class="project-title">Checklist du projet Streaming</h2>
+    <div class="project-details" id="streaming-details" hidden>
+
+      <section>
+        <h2>📅 Organisation planning</h2>
+        <ul>
+          <li>
+            <label><input type="checkbox" data-id="stream-planning" />
+              Créer un planning hebdo des sessions stream
+            </label>
+          </li>
+          <li>
+            <label><input type="checkbox" data-id="stream-timeline" />
+              Ajouter timeline des moments forts
+            </label>
+          </li>
+          <li>
+            <label><input type="checkbox" data-id="stream-archives" />
+              Organiser les extraits par date/session
+            </label>
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>🎬 Organisation du stream</h2>
+        <ul>
+          <li>
+            <label><input type="checkbox" data-id="scenes-obs" />
+              Créer les scènes OBS pour début / fin de stream
+            </label>
+          </li>
+          <li>
+            <label><input type="checkbox" data-id="overlay-assets" />
+              Ajouter les éléments d’overlay (images, alertes, transitions…)
+            </label>
+          </li>
+          <li>
+            <label><input type="checkbox" data-id="chatbot-commands" />
+              Configurer les commandes du chatbot (ex : <code>!réseau</code>, <code>!clip</code>)
+            </label>
+          </li>
+          <li>
+            <label><input type="checkbox" data-id="chatbot-test" />
+              Tester l’affichage et la réponse des commandes sur Twitch
+            </label>
+          </li>
+          <li>
+            <label><input type="checkbox" data-id="stream-checklist" />
+              Préparer une checklist “avant live” (mic, scène, overlays…)
+            </label>
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>📤 Publication et export</h2>
+        <ul>
+          <li>
+            <label><input type="checkbox" data-id="export-clips" />
+              Exporter les extraits importants
+            </label>
+          </li>
+          <li>
+            <label><input type="checkbox" data-id="upload-youtube" />
+              Upload auto ou manuel vers YouTube
+            </label>
+          </li>
+          <li>
+            <label><input type="checkbox" data-id="archive-drive" />
+              Sauvegarder sur drive local / cloud
+            </label>
+          </li>
+        </ul>
+      </section>
+
+    </div>
+  </section>
+
+</body>
+</html>

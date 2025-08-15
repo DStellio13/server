@@ -1,0 +1,1 @@
+<?phprequire_once('includes/config.php');if ($_SERVER['REQUEST_METHOD'] === 'POST') {    $id = (int)$_POST['id'];    $statut = $_POST['statut'];    $stmt = $pdo->prepare("UPDATE candidatures SET statut = ? WHERE id = ?");    $stmt->execute([$statut, $id]);    echo "OK";}?>
