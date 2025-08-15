@@ -1,1 +1,8 @@
-<?php// emploi/includes/config.php$host = 'localhost';$dbname = 'ddb';$username = 'root';$password = 'passwordroot'; // par défaut sous XAMPPtry {    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);} catch (PDOException $e) {    die("Erreur connexion DB : " . $e->getMessage());}?>
+﻿<?php
+// Placeholder ONLY. Real creds live in includes/core/projects/emploi.php (gitignored).
+return [
+  "db_host" => "127.0.0.1",
+  "db_name" => "emploi",
+  "db_user" => "USER",
+  "db_pass" => "PASS",
+];
