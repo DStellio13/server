@@ -116,7 +116,40 @@ function summarize_css(string $css): array {
   ];
 }
 $cssSummary = summarize_css($css);
+// -------- Base de données
+$db = null;
+try {
+  $dsn = "mysql:host=127.0.0.1;dbname=htdocs_local;charset=utf8mb4";
+  $db = new PDO($dsn, "root", "RootFort@13@RootContent", [
+    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+  ]);
+} catch (Exception $e) {
+  $dbError = $e->getMessage();
+}
 
+$tables = [];
+if ($db) {
+  $sql = "
+    SELECT TABLE_NAME, TABLE_COMMENT
+    FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = 'htdocs_local'
+    ORDER BY TABLE_NAME
+  ";
+  $tables = $db->query($sql)->fetchAll();
+}
+
+function get_columns(PDO $db, string $table): array {
+  $sql = "
+    SELECT COLUMN_NAME, COLUMN_TYPE, IS_NULLABLE, COLUMN_KEY, COLUMN_DEFAULT, EXTRA, COLUMN_COMMENT
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = 'htdocs_local' AND TABLE_NAME = :table
+    ORDER BY ORDINAL_POSITION
+  ";
+  $stmt = $db->prepare($sql);
+  $stmt->execute(['table'=>$table]);
+  return $stmt->fetchAll();
+}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
