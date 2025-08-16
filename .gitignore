@@ -19,3 +19,10 @@ includes/core/projects/*.php
 
 # Archives lourdes (si besoin)
 *.zip
+# Configs applicatives locales (secrets)
+htdocs/config.local.php
+
+# (Optionnel si tu crées d'autres variantes locales)
+htdocs/includes/config.local.php
+includes/core/config.php
+includes/core/projects/*.php

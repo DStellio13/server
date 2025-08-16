@@ -1,18 +1,16 @@
-﻿<?php
+<?php
 /**
- * htdocs/config.example.php (GIT)
- * Exemple de configuration — ne contient aucun secret sensible.
- * Copie/renomme en config.local.php pour mettre tes vrais identifiants.
+ * htdocs/config.local.php (HORS GIT)
+ * Tes secrets réels. Surchargera config.example.php via htdocs/config.php.
  */
 
 declare(strict_types=1);
 
-// Constantes attendues par le core (includes/core/config.php)
+// Exemple : tu avais parlé d'un mot de passe root
 define('DB_DSN',  'mysql:host=127.0.0.1;dbname=htdocs_local;charset=utf8mb4');
 define('DB_USER', 'root');
-define('DB_PASS', ''); // Mets un mot de passe si besoin (en local souvent vide)
+define('DB_PASS', 'RootFort@13@RootContent'); // <-- adapte si besoin
 
-// Optionnel : compatibilité avec des scripts qui utilisent db()
 if (!function_exists('db')) {
     function db(): PDO {
         static $pdo;
