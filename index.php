@@ -16,9 +16,9 @@ $pdo = db();
  */
 function sanitize_rel_path(?string $rel): ?string {
   if (!$rel) return null;
-  $rel = preg_replace('#\?.*$#', '', $rel);               // drop query pour FS
+  $rel = preg_replace('#\?.*$#', '', $rel); // drop query pour FS
   $rel = ltrim($rel, '/\\');
-  if (str_contains($rel, '..')) return null;               // no traversal
+  if (str_contains($rel, '..')) return null; // no traversal
   return $rel;
 }
 
@@ -41,12 +41,41 @@ function resolve_entry(string $slug, ?string $entryFromDb): array {
   $base = __DIR__ . '/';
   $candidates = [];
 
-  $sanitized = sanitize_rel_path($entryFromDb);
-  if ($sanitized) $candidates[] = $sanitized;
+  // 1) Si la BDD indique une entrée, on la teste en priorité
+  if ($san = sanitize_rel_path($entryFromDb)) {
+    $candidates[] = $san;
+  }
 
-  $candidates[] = $slug . '/index.php';
-  $candidates[] = $slug . '/index.html';
+  // 2) Index à la racine du projet (cas classique)
+  $candidates[] = "$slug/index.php";
+  $candidates[] = "$slug/index.html";
 
+  // 3) Sous-dossiers versionnés : v1, V2, version-3, etc.
+  $projDir = $base . $slug;
+  if (is_dir($projDir)) {
+    $versions = []; // [numero => 'nomDossier']
+    foreach (scandir($projDir) as $sub) {
+      if ($sub === '.' || $sub === '..') continue;
+      $path = $projDir . DIRECTORY_SEPARATOR . $sub;
+      if (!is_dir($path)) continue;
+
+      // v2 / V2 / version-2 / VERSION_10
+      if (preg_match('/^(?:v(?:ersion)?)?[-_ ]?(\d+)$/i', $sub, $m)) {
+        $num = (int)$m[1];
+        $versions[$num] = $sub;
+      }
+    }
+
+    if ($versions) {
+      krsort($versions, SORT_NUMERIC);              // plus grand numéro d’abord
+      $latest = reset($versions);                   // ex: 'v2'
+      // on essaie index.php puis index.html dans ce sous-dossier
+      $candidates[] = "$slug/$latest/index.php";
+      $candidates[] = "$slug/$latest/index.html";
+    }
+  }
+
+  // 4) Résolution des candidats
   foreach ($candidates as $rel) {
     $fs = $base . $rel;
     if (is_file($fs)) {
@@ -54,9 +83,12 @@ function resolve_entry(string $slug, ?string $entryFromDb): array {
       return [$rel, $fs, true, $nonEmpty];
     }
   }
-  // par défaut, on renvoie le premier candidat attendu même s’il n’existe pas
-  return [$candidates[0], $base . $candidates[0], false, false];
+
+  // 5) Fallback : rien trouvé → retourne le premier candidat testé
+  $fallback = $candidates[0] ?? "$slug/index.php";
+  return [$fallback, $base . $fallback, false, false];
 }
+
 
 /** Charge projets actifs */
 $projects = $pdo->query("
@@ -90,32 +122,8 @@ foreach ($projects as &$p) {
   }
 }
 unset($p);
-function render_tasks_for_project(PDO $pdo, string $slug): string {
-  $stmt = $pdo->prepare("
-    SELECT id, title, status, notes
-    FROM tasks
-    WHERE project_slug = ?
-    ORDER BY 
-      FIELD(status,'in-progress','todo','done'),  -- ordre visuel sympa
-      id DESC
-    LIMIT 200
-  ");
-  $stmt->execute([$slug]);
-  $rows = $stmt->fetchAll();
 
-  if (!$rows) {
-    return '<ul class="checklist"><li class="todo">Aucune tâche encore — ajoute-les depuis Tasks 🌱</li></ul>';
-  }
-
-  $li = '';
-  foreach ($rows as $t) {
-    $statusClass = htmlspecialchars($t['status'] ?: 'todo');
-    $title = htmlspecialchars($t['title']);
-    $notes = trim((string)$t['notes']) !== '' ? '<small style="color:#666;display:block;margin-top:2px">'.nl2br(htmlspecialchars($t['notes'])).'</small>' : '';
-    $li .= "<li class=\"{$statusClass}\">{$title}{$notes}</li>";
-  }
-  return "<ul class=\"checklist\">{$li}</ul>";
-}
+/** Tâches ouvertes (top N) */
 function fetch_open_tasks(PDO $pdo, string $slug, int $limit = 5): array {
   $sql = "SELECT id, title, status, priority, due_at
           FROM tasks
@@ -129,26 +137,29 @@ function fetch_open_tasks(PDO $pdo, string $slug, int $limit = 5): array {
   return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
+/** Normalisation des statuts → classes CSS */
 function status_class(string $status): string {
-  switch ($status) {
-    case 'in_progress': return 'in-progress';
-    case 'done':        return 'done';
-    case 'blocked':     return 'todo'; // ou 'blocked' si tu ajoutes le style
-    default:            return 'todo';
-  }
+  // uniformiser tirets/underscores
+  $s = str_replace('_', '-', strtolower(trim($status)));
+  return match ($s) {
+    'in-progress' => 'in-progress',
+    'done'        => 'done',
+    'blocked'     => 'todo', // ou 'blocked' si tu ajoutes le style
+    default       => 'todo',
+  };
 }
-
 ?>
-
 <!doctype html>
 <html lang="fr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Accueil - Mes Projets</title>
+
+  <!-- Global d'abord (règle projet) -->
   <link rel="stylesheet" href="style/style.css">
-  <link rel="stylesheet" href="/includes/ui/quickbar/quickbar.css">
   <script src="script/script.js" defer></script>
+
   <style>
     .site-header{display:flex;align-items:center;justify-content:space-between;margin:8px 0 14px}
     .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
@@ -161,9 +172,9 @@ function status_class(string $status): string {
     .pill.state-missing{color:#b91c1c;border-color:#fca5a5}
     .pill.state-na{color:#b45309}
     .details{margin-top:8px;padding-top:8px;border-top:1px dashed #ddd}
+    .header-actions{display:flex;gap:.5rem;align-items:center}
+    #compactToggle{border:1px solid #ddd;border-radius:999px;padding:.25rem .6rem;background:#fff}
   </style>
-
-  <script src="/includes/ui/quickbar/loader.js" defer></script>
 </head>
 <body>
 <header class="site-header">
@@ -172,7 +183,10 @@ function status_class(string $status): string {
   <?php else: ?>
     <strong>Mes Projets Locaux</strong>
   <?php endif; ?>
-  <small><a href="?scan=1" style="text-decoration:none">↻ Scanner les projets</a></small>
+  <div class="header-actions">
+    <a href="?scan=1" style="text-decoration:none">↻ Scanner les projets</a>
+    <button id="compactToggle" type="button" aria-pressed="false" title="Basculer mode compact">Compact</button>
+  </div>
 </header>
 
 <h1>📁 Mes Projets Locaux</h1>
@@ -186,14 +200,15 @@ function status_class(string $status): string {
     $emoji = $p['emoji'] ?? '';
 
     // Source de vérité : ce qu’on vient de résoudre
-    $entry  = $p['_entry_rel'];
-    $exists = (bool)$p['_exists'];
+    $entry    = $p['_entry_rel'];
+    $exists   = (bool)$p['_exists'];
     $nonEmpty = (bool)$p['_nonempty'];
     $autoInit = ((int)$p['_auto_init'] === 1);
 
     // Cas particulier "tasks" → ajouter un filtre si pas présent
-    if ($slug === 'tasks' && $entry && !str_contains($entry, '?')) {
-      $entry .= '?project=' . urlencode($slug);
+    $entryUrl = $entry;
+    if ($slug === 'tasks' && $entryUrl && !str_contains($entryUrl, '?')) {
+      $entryUrl .= '?project=' . urlencode($slug);
     }
 ?>
   <article class="card project" data-target="<?= $slug ?>" tabindex="0" aria-expanded="false" aria-controls="<?= $slug ?>-details">
@@ -217,28 +232,28 @@ function status_class(string $status): string {
 
       <?php if ($autoInit): ?>
         <p>
-          <a href="<?= htmlspecialchars($entry, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener">Ouvrir le projet</a>
+          <a href="<?= htmlspecialchars($entryUrl, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener">Ouvrir le projet</a>
           · <a href="tasks/index.php?project=<?= $slug ?>">Tâches</a>
         </p>
-<?php
-  $tasks = fetch_open_tasks($pdo, $slug, 5);
-  if (!empty($tasks)):
-?>
-  <h3 style="margin-top:.5rem">📌 Tâches en cours</h3>
-  <ul class="checklist">
-    <?php foreach ($tasks as $t): ?>
-      <li class="<?= htmlspecialchars(status_class($t['status'])) ?>">
-        <?= htmlspecialchars($t['title']) ?>
-        <?php if (!empty($t['due_at'])): ?>
-          — <small>échéance <?= htmlspecialchars(date('d/m/Y', strtotime($t['due_at']))) ?></small>
+        <?php
+          $tasks = fetch_open_tasks($pdo, $slug, 5);
+          if (!empty($tasks)):
+        ?>
+          <h3 style="margin-top:.5rem">📌 Tâches en cours</h3>
+          <ul class="checklist">
+            <?php foreach ($tasks as $t): ?>
+              <li class="<?= htmlspecialchars(status_class($t['status'])) ?>">
+                <?= htmlspecialchars($t['title']) ?>
+                <?php if (!empty($t['due_at'])): ?>
+                  — <small>échéance <?= htmlspecialchars(date('d/m/Y', strtotime($t['due_at']))) ?></small>
+                <?php endif; ?>
+              </li>
+            <?php endforeach; ?>
+          </ul>
+          <p><a href="tasks/index.php?project=<?= urlencode($slug) ?>">Voir toutes les tâches</a></p>
+        <?php else: ?>
+          <p><em>Pas de tâche ouverte.</em> <a href="tasks/index.php?project=<?= urlencode($slug) ?>">En ajouter</a></p>
         <?php endif; ?>
-      </li>
-    <?php endforeach; ?>
-  </ul>
-  <p><a href="tasks/index.php?project=<?= urlencode($slug) ?>">Voir toutes les tâches</a></p>
-<?php else: ?>
-  <p><em>Pas de tâche ouverte.</em> <a href="tasks/index.php?project=<?= urlencode($slug) ?>">En ajouter</a></p>
-<?php endif; ?>
 
       <?php elseif ($exists && !$nonEmpty): ?>
         <p style="color:#b91c1c">
@@ -256,16 +271,37 @@ function status_class(string $status): string {
   </article>
 <?php endforeach; ?>
 </section>
+<!-- ===== TÂCHES TEMPORAIRES (HARDCODÉES) POUR L'ACCUEIL ===== -->
+<style>
+  .idx-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:10px;margin:12px 0}
+  .idx-card h2{margin:.2rem 0 .6rem}
+  .idx-checklist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+  .idx-checklist li{padding:8px;border:1px dashed #e5e7eb;border-radius:8px;background:#fafafa}
+  .idx-checklist li.todo{list-style:'⬜ ' inside}
+  .idx-checklist li.progress{list-style:'🟡 ' inside}
+  .idx-checklist li.bug{list-style:'🐞 ' inside;border-color:#fca5a5;background:#fff5f5}
+  .idx-muted{color:#666}
+</style>
 
+<section class="idx-card" aria-label="Tâches accueil (temporaire)">
+  <h2>🧰 Tâches à faire — Accueil</h2>
+  <ul class="idx-checklist">
+    <li class="bug"><strong>Quickbar / Projets</strong> — Réussir à charger la liste des projets (le select reste vide).</li>
+    <li class="bug"><strong>Quickbar / Tâches</strong> — Même souci : la liste des projets est vide dans l’onglet Tâches.</li>
+    <li class="todo"><strong>Grille Accueil</strong> — Revoir la hauteur des cartes : quand on ouvre une carte, les 2 autres colonnes s’allongent sans contenu.</li>
+    <li class="todo"><strong>Quickbar / UI</strong> — Garder une taille fixe quand on change d’onglet (la hauteur ne doit pas sauter).</li>
+    <li class="todo"><strong>Accueil / Projets</strong> — Supprimer les dossiers colorés à gauche de l’emoji (l’emoji suffit).</li>
+    <li class="todo"><strong>Accueil / Projets</strong> — Revoir les infos affichées dans la carte quand on clique (contenu + ordre).</li>
+    <li class="bug"><strong>PHP Warning</strong> — Corriger <code>session_start()</code> : “Session cannot be started after headers have already been sent” (includes/ui/quickbar/quickbar.php:8).</li>
+  </ul>
+  <p class="idx-muted" style="margin-top:8px">Bloc temporaire (hardcodé). À supprimer quand la Quickbar refonctionne.</p>
+</section>
+<!-- ===== FIN TÂCHES TEMPORAIRES ===== -->
 <?php if (empty($projects)): ?>
   <p style="margin-top:1rem;color:#a00"><strong>Aucun projet actif.</strong> Remplis la table <code>projects</code> dans <code>htdocs_local</code>.</p>
 <?php endif; ?>
-<?php include __DIR__.'/includes/ui/quickbar/quickbar.php'; ?>
-<script src="/includes/ui/quickbar/quickbar.js" defer></script>
+
+<!-- Quickbar : un seul set, en relatif, et à la fin du body -->
+<?php include $_SERVER['DOCUMENT_ROOT'].'/includes/ui/quickbar/quickbar.php'; ?>
 </body>
-<?php
-  // si la page connaît son slug projet :
-  // $projectSlug = 'streaming';
-  include __DIR__.'/includes/quickbar.php';
-?> 
 </html>
