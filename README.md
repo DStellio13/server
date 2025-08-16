@@ -1,50 +1,112 @@
-# Projet server (htdocs)
+# 📖 README — Dossier `htdocs/`
 
-Suite de pages et outils locaux (XAMPP) avec **CSS/JS globaux**, **configs centralisées** et **checklists projets**.
+## 🎯 Rôle du dossier
 
-## � Stack
-- **Serveur**: XAMPP (Apache, PHP, MariaDB)
-- **Code**: PHP/HTML/CSS/JS
-- **OS cible**: Windows
-- **Git**: GitHub (`main`)
+Le dossier **`htdocs/` est la racine du serveur local (XAMPP)**.  
+Il sert de **hub central** pour tous les projets personnels.  
 
----
+Il a deux fonctions principales :
 
-## � Organisation
+- **Page d’accueil** (`index.html` / `index.php`)  
+  → Liste l’ensemble des projets disponibles avec leur état (initialisé ou non).  
+  → Sert de point d’entrée unique au serveur local.  
 
-### Globaux
-- `style/` → `style.css` global + `<projet>.css`
-- `script/` → `script.js` global + `<projet>.js`
-- `assets/` → images, icônes, médias
-
-### Projets
-Chaque projet a son dossier (`cs_inventory/`, `emploi/`, `monitor/`…), avec son `index.php`/`index.html`.  
-Les pages chargent **d’abord** `style/style.css` et `script/script.js`, puis les fichiers spécifiques.
-
-### Configs **centralisées**
-- Routeur: `includes/core/projects.php`
-  - `getProjectConfig('nom')` → array config
-  - `projectDb('nom')` → `PDO`
-- **Shims** (compat):
-  - `cs_inventory/includes/config.php` et `emploi/includes/config.php` **retournent** la config centrale.
-- **Secrets réels (gitignorés)**:
-  - `includes/core/config.php`
-  - `includes/core/projects/<projet>.php`
-- **Exemples versionnés**:
-  - `includes/core/config.example.php`
-  - `includes/core/projects/*.example.php`
-
-### Sécurité
-- `includes/.htaccess` bloque l’accès HTTP direct.
-- Secrets **hors Git** via `.gitignore`.
+- **Projet `htdocs`** (interne)  
+  → Le hub est lui-même un projet à part entière.  
+  → Il présente les **tâches, sous-tâches et évolutions futures**.  
+  → Il peut contenir des **sous-projets dynamiques**, gérés par la base de données.
 
 ---
 
-## � Utilisation rapide (PDO)
+## 📂 Arborescence (vue simplifiée)
 
-```php
-<?php
-require_once __DIR__ . '/../includes/core/projects.php';
-$pdo = projectDb('cs_inventory'); // ou 'emploi'
-$stmt = $pdo->query('SELECT 1');
-echo $stmt->fetchColumn();
+```text
+htdocs/   ← racine du serveur local (XAMPP)
+├── index.html / index.php       # Hub principal (accueil)
+├── htdocs/                      # Projet interne du hub
+│   └── index.php                # Page informative (tâches, sous-projets, roadmap)
+├── style/                       # CSS global + spécifiques
+│   ├── style.css
+│   └── <project>.css
+├── script/                      # JS global + spécifiques
+│   ├── script.js
+│   └── <project>.js
+├── assets/                      # Ressources statiques communes
+│   ├── icons/
+│   ├── img/
+│   └── media/
+├── <project>/                   # Un dossier par projet (cs_inventory, monitor, etc.)
+│   └── index.html / index.php
+├── includes/                    # Configs & utilitaires (quickbar, DB, etc.)
+├── readme_htdocs.md             # Documentation du hub
+├── styleguide_global.md         # Conventions globales
+└── favicon.ico
+```
+
+---
+
+## ⚙️ Conventions globales
+
+### 🔗 Configuration
+
+- Tous les projets utilisent **la même config globale** :  
+  ```text
+  includes/core/config.php
+  ```
+- Override optionnel par projet :  
+  ```text
+  includes/core/projects/<project>.php
+  ```
+
+### 🎨 Chargement CSS
+
+- Toujours charger :  
+  ```html
+  <link rel="stylesheet" href="../style/style.css" />
+  ```
+- Puis, si besoin, un fichier spécifique :  
+  ```html
+  <link rel="stylesheet" href="../style/<PROJECT>.css" />
+  ```
+
+### ⚡ Chargement JS
+
+- Toujours charger :  
+  ```html
+  <script src="../script/script.js" defer></script>
+  ```
+- Puis, si besoin, un fichier spécifique :  
+  ```html
+  <script src="../script/<PROJECT>.js" defer></script>
+  ```
+
+### 📁 Ressources
+
+- Plus de détails sur le index du projet htdocs
+
+---
+
+## 🗂️ Gestion dynamique
+
+- Plus de détails sur le index du projet htdocs
+
+---
+
+## 🛡️ Bonnes pratiques
+
+- **Pas d’accents ni d’espaces** dans les noms de fichiers.  
+- Utiliser le **kebab-case** pour les fichiers CSS/JS :  
+  - `<PROJECT>.css`  
+  - `<PROJECT>.js`  
+- Les IDs et attributs HTML doivent être synchronisés :  
+  ```html
+  <div class="project" data-target="<PROJECT>" aria-controls="<PROJECT>-details">
+      <div id="<PROJECT>-details">...</div>
+  </div>
+  ```
+
+---
+
+✍️ **Résumé** :  
+`htdocs/` est à la fois **la racine du serveur local** et **un projet interne** qui documente et centralise tous les autres.  
+Sa structure est **claire, normalisée et extensible**, grâce à une configuration globale et une gestion dynamique en base de données.

@@ -160,21 +160,6 @@ function status_class(string $status): string {
   <link rel="stylesheet" href="style/style.css">
   <script src="script/script.js" defer></script>
 
-  <style>
-    .site-header{display:flex;align-items:center;justify-content:space-between;margin:8px 0 14px}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
-    .card{background:#fff;border:1px solid #ddd;border-radius:10px;padding:10px 12px}
-    .title{display:flex;align-items:center;gap:.5rem;margin:0;font-size:1.05rem;font-weight:700}
-    .title img.icon{width:20px;height:20px;vertical-align:middle}
-    .meta{display:flex;gap:8px;margin-top:6px;font-size:.85rem;color:#555}
-    .pill{border:1px solid #ddd;border-radius:999px;padding:2px 8px}
-    .pill.state-ok{color:#16853a}
-    .pill.state-missing{color:#b91c1c;border-color:#fca5a5}
-    .pill.state-na{color:#b45309}
-    .details{margin-top:8px;padding-top:8px;border-top:1px dashed #ddd}
-    .header-actions{display:flex;gap:.5rem;align-items:center}
-    #compactToggle{border:1px solid #ddd;border-radius:999px;padding:.25rem .6rem;background:#fff}
-  </style>
 </head>
 <body>
 <header class="site-header">
@@ -272,6 +257,7 @@ function status_class(string $status): string {
 <?php endforeach; ?>
 </section>
 <!-- ===== TÂCHES TEMPORAIRES (HARDCODÉES) POUR L'ACCUEIL ===== -->
+<!-- ===== TÂCHES TEMPORAIRES (HARDCODÉES) POUR L'ACCUEIL ===== -->
 <style>
   .idx-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:10px;margin:12px 0}
   .idx-card h2{margin:.2rem 0 .6rem}
@@ -285,17 +271,23 @@ function status_class(string $status): string {
 
 <section class="idx-card" aria-label="Tâches accueil (temporaire)">
   <h2>🧰 Tâches à faire — Accueil</h2>
-  <ul class="idx-checklist">
-    <li class="bug"><strong>Quickbar / Projets</strong> — Réussir à charger la liste des projets (le select reste vide).</li>
+  <ul class="idx-checklist ">
+    <li class="bug card"><strong>Quickbar / Projets</strong> — Réussir à charger la liste des projets (le select reste vide).</li>
     <li class="bug"><strong>Quickbar / Tâches</strong> — Même souci : la liste des projets est vide dans l’onglet Tâches.</li>
     <li class="todo"><strong>Grille Accueil</strong> — Revoir la hauteur des cartes : quand on ouvre une carte, les 2 autres colonnes s’allongent sans contenu.</li>
     <li class="todo"><strong>Quickbar / UI</strong> — Garder une taille fixe quand on change d’onglet (la hauteur ne doit pas sauter).</li>
     <li class="todo"><strong>Accueil / Projets</strong> — Supprimer les dossiers colorés à gauche de l’emoji (l’emoji suffit).</li>
     <li class="todo"><strong>Accueil / Projets</strong> — Revoir les infos affichées dans la carte quand on clique (contenu + ordre).</li>
-    <li class="bug"><strong>PHP Warning</strong> — Corriger <code>session_start()</code> : “Session cannot be started after headers have already been sent” (includes/ui/quickbar/quickbar.php:8).</li>
+    <li class="bug"><strong>PHP Warning</strong> — Corriger <code>session_start()</code> après envoi des headers (includes/ui/quickbar/quickbar.php:8).</li>
+    <li class="todo"><strong>Accueil</strong> — Revoir l'interface index htdocs parceque c'est sans ame la. peut etre rajouter des animations de l'ajax a reflechir.</li>
+    <!-- NOUVEAU : sauvegardes -->
+    <li class="todo"><strong>Sauvegarde</strong> — Faire une sauvegarde complète de la BDD et de <code>htdocs</code> (snapshot du jour).</li>
+    <li class="todo"><strong>Automatisation sauvegarde</strong> — Créer un script + planification (rotation 7/30 jours, logs, exclusions temporaires).</li>
   </ul>
   <p class="idx-muted" style="margin-top:8px">Bloc temporaire (hardcodé). À supprimer quand la Quickbar refonctionne.</p>
 </section>
+<!-- ===== FIN TÂCHES TEMPORAIRES ===== -->
+
 <!-- ===== FIN TÂCHES TEMPORAIRES ===== -->
 <?php if (empty($projects)): ?>
   <p style="margin-top:1rem;color:#a00"><strong>Aucun projet actif.</strong> Remplis la table <code>projects</code> dans <code>htdocs_local</code>.</p>
