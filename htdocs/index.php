@@ -5,9 +5,9 @@ declare(strict_types=1);
  * htdocs/htdocs/index.php
  * - Affiche le README.md (cadre scrollable)
  * - Résume les grandes lignes du style global (style/style.css)
- * - Liste les fonctions disponibles (remplies côté client via script.js)
- * - Liste les tables/colonnes/commentaires depuis la BDD (via ../config.php)
- * - Sans dépendance DB codée en dur
+ * - Liste les fonctions JS (remplies côté client via script.js)
+ * - Liste tables/colonnes/commentaires depuis la BDD
+ * - ⚠️ Config chargée UNIQUEMENT depuis ../../includes/core/config.php
  */
 
 // -------- README
@@ -18,11 +18,10 @@ $readmeContent = is_file($readmePath)
 
 /**
  * Conversion Markdown → HTML minimaliste
- * ⚠️ Important : NE PAS échapper tout le document avec htmlspecialchars(),
- * sinon les chevrons < > deviennent illisibles hors des blocs <code>.
+ * ⚠️ Important : ne pas échapper tout le doc, pour conserver < > hors des blocs code.
  */
 function md_to_html(string $md): string {
-  // 1) Blocs de code (```lang ... ```) — protégés et échappés
+  // 1) Blocs de code ```lang ... ```
   $md = preg_replace_callback('/```([a-z0-9_-]*)\n([\s\S]*?)```/i', function($m){
     $lang = $m[1] ?: 'text';
     $code = htmlspecialchars($m[2], ENT_QUOTES, 'UTF-8');
@@ -38,31 +37,23 @@ function md_to_html(string $md): string {
   $md = preg_replace('/\*\*(.+?)\*\*/s', '<strong>$1</strong>', $md);
   $md = preg_replace('/\*(.+?)\*/s',     '<em>$1</em>', $md);
 
-  // 4) Code inline `...` — seulement le contenu est échappé
+  // 4) Code inline
   $md = preg_replace_callback('/`([^`\n]+)`/', function($m){
     return '<code>'.htmlspecialchars($m[1], ENT_QUOTES, 'UTF-8').'</code>';
   }, $md);
 
   // 5) Listes
   $md = preg_replace('/^\- (.+)$/m', '<li>$1</li>', $md);
-  $md = preg_replace_callback(
-    '/(?:^|\n)(?:<li>.*<\/li>\n?)+/m',
-    fn($m)=>"<ul>\n".trim($m[0])."\n</ul>\n",
-    $md
-  );
+  $md = preg_replace_callback('/(?:^|\n)(?:<li>.*<\/li>\n?)+/m', fn($m)=>"<ul>\n".trim($m[0])."\n</ul>\n", $md);
 
   // 6) Paragraphes (n’entoure pas les blocs déjà transformés)
   $parts = preg_split("/\n{2,}/", $md);
   foreach ($parts as &$p) {
-    if (!preg_match('/^\s*<(h\d|pre|ul|li|code)/i', $p)) {
-      $p = '<p>'.$p.'</p>';
-    }
+    if (!preg_match('/^\s*<(h\d|pre|ul|li|code)/i', $p)) $p = '<p>'.$p.'</p>';
   }
   return implode("\n", $parts);
 }
-
 $readmeHtml = md_to_html($readmeContent);
-
 
 // -------- Résumé style.css (côté PHP)
 $cssPath = __DIR__ . '/../style/style.css';
@@ -119,154 +110,89 @@ function summarize_css(string $css): array {
 }
 $cssSummary = summarize_css($css);
 
+// -------- BDD : lien direct vers ../../includes/core/config.php (aucune recherche)
+$pdo = null;
+$dbError = null;
+$dbSchema = null;
 
-// -------- BDD : se brancher via ../config.php (SANS secrets en dur)
+$configPath = __DIR__ . '../../includes/core/config.php';
+if (!is_file($configPath)) {
+  $dbError = "Config introuvable à $configPath";
+} else {
+  /** @noinspection PhpIncludeInspection */
+  require_once $configPath;
 
-/**
- * Essaie de construire un PDO depuis la config projet.
- * Prend en charge plusieurs conventions possibles :
- *  - fonction utilitaire : get_db_pdo(): PDO
- *  - constantes : DB_DSN | (DB_HOST, DB_NAME, DB_USER, DB_PASS)
- *  - variables : $DB_DSN | $DB | $config['db'] | $CONFIG['db']
- */
-function hub_get_pdo_from_config(): array {
-  $pdo = null;
-  $err = null;
-
-  $configFile = __DIR__ . '/../config.php';
-  if (!is_file($configFile)) {
-    return [null, "config.php introuvable dans htdocs/"];
-  }
-
-  // Scope d'inclusion isolé
-  $cfg = (function($file){
-    /** @noinspection PhpIncludeInspection */
-    return include $file;
-  })($configFile);
-
-  // 1) Si la config expose une fonction utilitaire
+  // 1) helper direct si dispo
   if (function_exists('get_db_pdo')) {
-    try { return [get_db_pdo(), null]; } catch (Throwable $e) { $err = $e->getMessage(); }
+    try { $pdo = get_db_pdo(); } catch (Throwable $e) { $dbError = $e->getMessage(); }
+  } elseif (function_exists('db')) {
+    try { $pdo = db(); } catch (Throwable $e) { $dbError = $e->getMessage(); }
   }
 
-  // 2) Constantes connues
-  if (defined('DB_DSN')) {
-    try { return [new PDO(DB_DSN, defined('DB_USER')?DB_USER:null, defined('DB_PASS')?DB_PASS:null, [
-      PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,
-      PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC,
-    ]), null]; } catch (Throwable $e) { $err = $e->getMessage(); }
-  }
-  if (defined('DB_HOST') && defined('DB_NAME') && defined('DB_USER')) {
-    $host = DB_HOST; $name = DB_NAME; $user = DB_USER; $pass = defined('DB_PASS')?DB_PASS:'';
-    $dsn = "mysql:host={$host};dbname={$name};charset=utf8mb4";
-    try { return [new PDO($dsn, $user, $pass, [
-      PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,
-      PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC,
-    ]), null]; } catch (Throwable $e) { $err = $e->getMessage(); }
-  }
-
-  // 3) Variables globales possibles (incluses par config.php)
-  foreach ([
-    // DSN direct
-    function() {
-      if (isset($GLOBALS['DB_DSN'])) {
-        $user = $GLOBALS['DB_USER'] ?? null; $pass = $GLOBALS['DB_PASS'] ?? null;
-        return ["dsn"=>$GLOBALS['DB_DSN'], "user"=>$user, "pass"=>$pass];
-      }
-      return null;
-    },
-    // Tableau $DB = ['dsn'=>..., 'user'=>..., 'pass'=>...]
-    function() {
-      if (isset($GLOBALS['DB']) && is_array($GLOBALS['DB'])) {
-        $DB = $GLOBALS['DB'];
-        if (!empty($DB['dsn'])) return ["dsn"=>$DB['dsn'], "user"=>$DB['user']??null, "pass"=>$DB['pass']??null];
-        if (!empty($DB['host']) && !empty($DB['name'])) {
-          $dsn = "mysql:host={$DB['host']};dbname={$DB['name']};charset=utf8mb4";
-          return ["dsn"=>$dsn, "user"=>$DB['user']??null, "pass"=>$DB['pass']??null];
-        }
-      }
-      return null;
-    },
-    // Tableaux $config['db'] / $CONFIG['db']
-    function() {
-      foreach (['config','CONFIG'] as $k) {
-        if (isset($GLOBALS[$k]['db']) && is_array($GLOBALS[$k]['db'])) {
-          $db = $GLOBALS[$k]['db'];
-          if (!empty($db['dsn'])) return ["dsn"=>$db['dsn'], "user"=>$db['user']??null, "pass"=>$db['pass']??null];
-          if (!empty($db['host']) && !empty($db['name'])) {
-            $dsn = "mysql:host={$db['host']};dbname={$db['name']};charset=utf8mb4";
-            return ["dsn"=>$dsn, "user"=>$db['user']??null, "pass"=>$db['pass']??null];
-          }
-        }
-      }
-      return null;
-    },
-  ] as $resolver) {
-    $res = $resolver();
-    if ($res && !empty($res['dsn'])) {
+  // 2) sinon, essaie DSN / host-name
+  if (!$pdo instanceof PDO) {
+    $dsn  = defined('DB_DSN')  ? DB_DSN  : ($GLOBALS['DB_DSN'] ?? null);
+    $user = defined('DB_USER') ? DB_USER : ($GLOBALS['DB_USER'] ?? ($GLOBALS['DB']['user'] ?? null));
+    $pass = defined('DB_PASS') ? DB_PASS : ($GLOBALS['DB_PASS'] ?? ($GLOBALS['DB']['pass'] ?? null));
+    if ($dsn) {
       try {
-        $pdo = new PDO($res['dsn'], $res['user'] ?? null, $res['pass'] ?? null, [
-          PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,
-          PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC,
+        $pdo = new PDO($dsn, $user, $pass, [
+          PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+          PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         ]);
-        return [$pdo, null];
-      } catch (Throwable $e) { $err = $e->getMessage(); }
+      } catch (Throwable $e) { $dbError = $e->getMessage(); }
+    } else {
+      $host = defined('DB_HOST') ? DB_HOST : ($GLOBALS['DB']['host'] ?? null);
+      $name = defined('DB_NAME') ? DB_NAME : ($GLOBALS['DB']['name'] ?? null);
+      $user = $user ?? (defined('DB_USER') ? DB_USER : null);
+      $pass = $pass ?? (defined('DB_PASS') ? DB_PASS : null);
+      if ($host && $name) {
+        $dsn = "mysql:host={$host};dbname={$name};charset=" . (defined('DB_CHARSET') ? DB_CHARSET : 'utf8mb4');
+        try {
+          $pdo = new PDO($dsn, (string)$user, (string)$pass, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+          ]);
+        } catch (Throwable $e) { $dbError = $e->getMessage(); }
+      } else {
+        $dbError = $dbError ?: "La config ne fournit ni get_db_pdo()/db() ni DSN/host/name.";
+      }
     }
   }
 
-  return [null, $err ?: "Impossible de déterminer la configuration BDD depuis config.php"];
-}
-
-[$db, $dbError] = hub_get_pdo_from_config();
-
-// Prépare la liste des tables si connexion OK
-$tables = [];
-if ($db instanceof PDO) {
-  // Détecte automatiquement le schéma courant quand possible
-  $dbname = null;
-  try {
-    $dbname = $db->query('SELECT DATABASE() AS db')->fetch()['db'] ?? null;
-  } catch (Throwable $e) {}
-
-  // Si pas de DB courante (cas DSN sans dbname), on tente le fallback via SQL_USER()
-  if (!$dbname) {
+  // 3) détecte le schéma courant
+  if ($pdo instanceof PDO) {
     try {
-      $dbnameRow = $db->query("SELECT SCHEMA() AS db")->fetch();
-      $dbname = $dbnameRow['db'] ?? null;
-    } catch (Throwable $e) {}
-  }
-
-  // Si toujours rien, on abandonne proprement (pas de schéma)
-  if ($dbname) {
-    $sqlTables = "
-      SELECT TABLE_NAME, TABLE_COMMENT
-      FROM INFORMATION_SCHEMA.TABLES
-      WHERE TABLE_SCHEMA = :schema
-      ORDER BY TABLE_NAME
-    ";
-    $st = $db->prepare($sqlTables);
-    $st->execute(['schema'=>$dbname]);
-    $tables = $st->fetchAll();
-
-    function hub_get_columns(PDO $db, string $schema, string $table): array {
-      $sql = "
-        SELECT COLUMN_NAME, COLUMN_TYPE, IS_NULLABLE, COLUMN_KEY, COLUMN_DEFAULT, EXTRA, COLUMN_COMMENT
-        FROM INFORMATION_SCHEMA.COLUMNS
-        WHERE TABLE_SCHEMA = :schema AND TABLE_NAME = :table
-        ORDER BY ORDINAL_POSITION
-      ";
-      $stmt = $db->prepare($sql);
-      $stmt->execute(['schema'=>$schema, 'table'=>$table]);
-      return $stmt->fetchAll();
-    }
-
-    // Mémorise le schéma pour l'HTML
-    $GLOBALS['__HUB_SCHEMA__'] = $dbname;
-  } else {
-    $dbError = "Schéma (base) non détecté depuis la connexion courante.";
+      $dbSchema = $pdo->query("SELECT DATABASE()")->fetchColumn() ?: null;
+    } catch (Throwable $e) { /* silencieux */ }
   }
 }
 
+// Prépare les données BDD si connexion OK
+$tables = [];
+if ($pdo instanceof PDO && $dbSchema) {
+  $sqlTables = "
+    SELECT TABLE_NAME, TABLE_COMMENT
+    FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = :schema
+    ORDER BY TABLE_NAME
+  ";
+  $st = $pdo->prepare($sqlTables);
+  $st->execute(['schema'=>$dbSchema]);
+  $tables = $st->fetchAll();
+
+  function hub_get_columns(PDO $db, string $schema, string $table): array {
+    $sql = "
+      SELECT COLUMN_NAME, COLUMN_TYPE, IS_NULLABLE, COLUMN_KEY, COLUMN_DEFAULT, EXTRA, COLUMN_COMMENT
+      FROM INFORMATION_SCHEMA.COLUMNS
+      WHERE TABLE_SCHEMA = :schema AND TABLE_NAME = :table
+      ORDER BY ORDINAL_POSITION
+    ";
+    $stmt = $db->prepare($sql);
+    $stmt->execute(['schema'=>$schema, 'table'=>$table]);
+    return $stmt->fetchAll();
+  }
+}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -358,13 +284,13 @@ if ($db instanceof PDO) {
 
     <!-- Documentation automatique de la base de données -->
     <section class="panel">
-      <h2>🗄️ Base de données<?= isset($GLOBALS['__HUB_SCHEMA__']) ? ' — '.htmlspecialchars($GLOBALS['__HUB_SCHEMA__']) : '' ?></h2>
+      <h2>🗄️ Base de données<?= $dbSchema ? ' — '.htmlspecialchars($dbSchema, ENT_QUOTES, 'UTF-8') : '' ?></h2>
 
       <?php if (!empty($dbError)): ?>
         <p class="muted">⚠️ Connexion BDD : <?= htmlspecialchars($dbError, ENT_QUOTES, 'UTF-8') ?></p>
-        <p class="muted">Vérifie <code>htdocs/config.php</code> (DSN / host / user / pass) — rien n’est stocké ici.</p>
-      <?php elseif (empty($tables)): ?>
-        <p class="muted">Aucune table détectée (ou schéma non défini).</p>
+        <p class="muted">Chemin de config utilisé : <code><?= htmlspecialchars($configPath, ENT_QUOTES, 'UTF-8') ?></code></p>
+      <?php elseif (!$pdo || !$dbSchema): ?>
+        <p class="muted">Aucune table détectée (connexion ou schéma indisponible).</p>
       <?php else: ?>
         <?php foreach ($tables as $t): ?>
           <details>
@@ -388,7 +314,7 @@ if ($db instanceof PDO) {
                   </tr>
                 </thead>
                 <tbody>
-                  <?php foreach (hub_get_columns($db, $GLOBALS['__HUB_SCHEMA__'], $t['TABLE_NAME']) as $c): ?>
+                  <?php foreach (hub_get_columns($pdo, $dbSchema, $t['TABLE_NAME']) as $c): ?>
                     <tr>
                       <td><code><?= htmlspecialchars($c['COLUMN_NAME']) ?></code></td>
                       <td><?= htmlspecialchars($c['COLUMN_TYPE']) ?></td>

@@ -44,7 +44,7 @@
     </section>
 
     <!-- Liste dynamique -->
-    <ul id="inv-list" class="list"></ul>
+    <ul id="inv-list" class="list card-list"></ul>
     <div id="inv-empty" class="empty" hidden>Aucun article.</div>
 
     <p class="muted" style="margin-top:16px">

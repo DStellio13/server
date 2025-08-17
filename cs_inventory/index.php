@@ -1,5 +1,6 @@
 <?php
-// htdocs/cs_inventory/index.php
+declare(strict_types=1);
+require_once __DIR__ . '/../includes/core/config.php'; // db()
 session_start();
 
 // Simule une "connexion Steam" pour dev
